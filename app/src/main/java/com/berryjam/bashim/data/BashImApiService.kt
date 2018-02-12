@@ -1,8 +1,12 @@
 package com.berryjam.bashim.data
 
+import com.berryjam.bashim.BuildConfig
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import io.reactivex.Observable
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import okhttp3.logging.HttpLoggingInterceptor.Level
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -25,9 +29,19 @@ interface BashImApiService {
 
     companion object Factory {
         fun create(): BashImApiService {
+            val httpClient = OkHttpClient().newBuilder()
+            httpClient.addInterceptor(HttpLoggingInterceptor().apply {
+                level = when {
+                    BuildConfig.DEBUG -> Level.BODY
+                    else -> Level.NONE
+                }
+            })
             val gson: Gson = GsonBuilder().setLenient().create()
             val retrofit = Retrofit.Builder()
-                    .baseUrl("http://www.umori.li/")
+                    // .baseUrl("http://www.umori.li/")
+                    // You can access the page without frames with this
+                    .baseUrl("http://umorili.herokuapp.com/")
+                    .client(httpClient.build())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build()
